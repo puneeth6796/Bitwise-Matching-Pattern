@@ -1,0 +1,97 @@
+def next_larger_same_ones(n: int) -> int:
+    """
+    Finds the next larger integer with the same number of 1 bits as n.
+    Implements the classic bit manipulation algorithm:
+    1) Find rightmost non-trailing zero.
+    2) Flip it and rearrange bits to the right.
+    """
+    c = n
+    c0 = 0  # count trailing zeros
+    c1 = 0  # count ones right to the first non-trailing zero from right
+
+    # count trailing zeros
+    while (c & 1) == 0 and c != 0:
+        c0 += 1
+        c >>= 1
+
+    # count ones after trailing zeros
+    while (c & 1) == 1:
+        c1 += 1
+        c >>= 1
+
+    # If there is no bigger number with the same number of 1s
+    if c0 + c1 == 31 or c0 + c1 == 0:
+        return -1
+
+    p = c0 + c1  # position of rightmost non-trailing zero
+
+    # Flip rightmost non-trailing zero
+    n |= (1 << p)
+
+    # Clear bits to the right of p
+    n &= ~((1 << p) - 1)
+
+    # Insert (c1-1) ones on the right
+    n |= (1 << (c1 - 1)) - 1
+
+    return n
+
+def print_header():
+    header = " Bitwise Matching Pattern: Next Larger Integer "
+    print("\n" + "="*len(header))
+    print(header)
+    print("="*len(header) + "\n")
+
+def print_result(input_val: int, output_val: int):
+    card_width = 70
+    RESET = "\033[0m"
+    GREEN = "\033[92m"
+    RED = "\033[91m"
+    is_tty = hasattr(__import__('sys').stdout, 'isatty') and __import__('sys').stdout.isatty()
+
+    if output_val == -1:
+        icon = "❌"
+        color = RED if is_tty else ""
+        msg = "No larger integer with the same number of 1 bits exists."
+    else:
+        icon = "✅"
+        color = GREEN if is_tty else ""
+        msg = f"Next larger integer with same count of 1 bits is: {output_val} (binary: {bin(output_val)})"
+
+    top = "╔" + "═"*(card_width-2) + "╗"
+    bottom = "╚" + "═"*(card_width-2) + "╝"
+
+    in_msg = f"Input integer: {input_val} (binary: {bin(input_val)})"
+    padding_in = (card_width - 2 - len(in_msg)) // 2
+    line_in = "║" + " "*padding_in + in_msg + " "*(card_width - 2 - len(in_msg) - padding_in) + "║"
+
+    padding_out = (card_width - 2 - len(msg) - 2) // 2  # 2 for icon and space
+    line_out = "║" + " "*padding_out + f"{icon} {msg}" + " "*(card_width - 2 - len(msg) - 2 - padding_out) + "║"
+
+    if is_tty:
+        print(color + top)
+        print(line_in)
+        print(line_out)
+        print(bottom + RESET + "\n")
+    else:
+        print(top)
+        print(line_in)
+        print(line_out)
+        print(bottom + "\n")
+
+def main():
+    print_header()
+    try:
+        user_input = input("Enter an integer to find the next larger integer with the same number of 1 bits:\n> ")
+        n = int(user_input)
+        if n < 0:
+            raise ValueError("Only non-negative integers supported.")
+    except ValueError as ve:
+        print(f"\nError: Invalid input - {ve}\n")
+        return
+
+    result = next_larger_same_ones(n)
+    print_result(n, result)
+
+if __name__ == "__main__":
+    main()
